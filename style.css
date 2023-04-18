@@ -1,0 +1,106 @@
+:root {
+  --blue: rgb(69 165 210);
+  --background: rgb(19 37 49);
+  --button-active: #0069d9;
+  --button-hover: #5d96d4;
+}
+* {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  color: ghostwhite;
+}
+html{
+  margin: 0 auto;
+  max-width: 1024px;
+  max-height: 1024px;
+  background-color: black;
+}
+body {
+  width: 1024px;
+  height: 1024px;
+  max-height: 100vh;
+  background-color: var(--background);
+}
+ol{
+    list-style-position: inside;
+}
+input {
+  outline: none;
+}
+:disabled {
+  background-color: grey;
+}
+button:hover:not(:disabled) {
+  cursor: pointer;
+  background-color: var(--button-hover);
+}
+button {
+  font-size: larger;
+  border: none;
+  padding: 3px 20px;
+  border-radius: 20px;
+  background-color: var(--button-active);
+}
+#game{
+  padding-top: 2vh;
+  gap: 10px;
+  display: none;
+  height: inherit;
+  max-height: inherit;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+}
+#rewindRange{
+  display: none;
+  width: 85%;
+}
+canvas {
+  box-shadow: 0 0 9px wheat;
+  display: inherit;
+  border: 5px solid wheat;
+  border-radius: 10px;
+}
+.icon h1 {
+  font-weight: bolder;
+  color: var(--blue);
+  transform: scaleY(1.3);
+}
+.screen {
+  height: inherit;
+  border-radius: 30px;
+  padding: 50px;
+  padding-top: 20vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.instruction > h2{
+    color: var(--blue);
+}
+.instruction {
+  margin-bottom: 10px;
+  padding: 0 10%;
+}
+.before-play > * {
+  margin-bottom: 10px;
+  display: block;
+  text-align: center;
+}
+.before-play > label > h2{
+    color: var(--blue);
+}
+#play {
+  margin: auto;
+  font-size: large;
+}
+#name {
+  border: 2px solid var(--blue);
+  border-radius: 20px;
+  background-color: rgba(245, 222, 179, 0.2);
+  width: 400px;
+  padding: 10px 20px;
+}

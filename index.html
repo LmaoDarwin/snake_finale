@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="js/main.js" defer></script>
+    <title>PHYTONS</title>
+  </head>
+  <body>
+    <main class="screen">
+      <div class="icon"><h1>PHYTONS</h1></div>
+      <div class="instruction">
+        <h2>Game instruction</h2>
+        <ol>
+          <li>North with up arrow or ‘w’</li>
+          <li>South with down arrow or ‘s’</li>
+          <li>East with right arrow or ‘d’</li>
+          <li>West with left arrow or ‘a’</li>
+        </ol>
+        <p>
+          The first screen of the game presents the instructions to the player, a text field for player’s
+          name, and the Play buttons for starting the game. The instructions for the game are included in the
+          media files. The “Play” button should be disabled if the text field is empty.
+        </p>
+      </div>
+      <div class="before-play">
+        <label for="name"><h2>Input your name</h2></label>
+        <input id="name" type="text" autocomplete="off"/>
+        <button id="play" disabled="true">Play</button>
+      </div>
+    </main>
+    <main id="game">
+      <canvas id="canvas"></canvas>
+      <input type="range" id="rewindRange" min="0" max="4" value="4">
+      <button id="rewind">Rewind</button>
+    </main>
+  </body>
+</html>
