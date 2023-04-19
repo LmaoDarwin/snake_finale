@@ -27,14 +27,17 @@
       </div>
       <div class="before-play">
         <label for="name"><h2>Input your name</h2></label>
-        <input id="name" type="text" autocomplete="off"/>
+        <input id="name" type="text" autocomplete="off" />
         <button id="play" disabled="true">Play</button>
       </div>
     </main>
     <main id="game">
       <canvas id="canvas"></canvas>
-      <input type="range" id="rewindRange" min="0" max="4" value="4">
-      <button id="rewind">Rewind</button>
+      <input type="range" id="rewindRange" min="0" max="4" value="4" />
+      <div>
+        <button id="cancel">Cancel</button>
+        <button id="rewind">Rewind</button>
+      </div>
     </main>
   </body>
 </html>
