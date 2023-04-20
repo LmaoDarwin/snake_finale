@@ -49,7 +49,9 @@ class Game {
     context.canvas.addEventListener('click', () => console.log('e'));
     context.clearRect(0, 0, this.width, this.height);
     context.fillStyle = 'wheat';
-    context.fillRect(this.width / 2, this.height / 2, 200, 100);
+    context.fillRect(this.width / 2 - 400/2, this.height / 2 - 300/2, 400, 300);
+    context.font = 'bold 20px'
+    context.fillText(`Your score : ${this.score}`,this.width/2,this.height/2)
     localStorage.setItem('highscore', Math.max(this.snake.currTails, this.highscore));
   }
   calculateTime() {
@@ -242,6 +244,12 @@ class Apple {
     this.x = ~~(Math.random() * game.gridWidth) * this.size;
     this.y = ~~(Math.random() * game.gridHeight) * this.size;
     this.y += 40; //offset top
+    this.appleCount.forEach(({ x, y }) => {
+      if (x === this.x && y === this.y) this.createApple();
+    });
+    this.game.snake.tailsCoordinate.forEach(({ x, y }) => {
+      if (x === this.x && y === this.y) this.createApple();
+    });
     if (this.count === 3) {
       // TODO: CHECK IF THE APPLE COLLIDE WITH SNAKE BODY
       this.appleCount.push({ x: this.x, y: this.y });
@@ -264,12 +272,14 @@ class Rewind {
   /** @param {Game}game */
   constructor(game) {
     this.game = game;
-    this.rewindDir = []
+    this.rewindDir = [];
     this.rewindCor = [];
     this.index = 4;
     setInterval(() => {
-      if (this.rewindCor.length > 5) this.rewindCor.shift(),this.rewindDir.shift();
-      if (game.scene === 'game') this.rewindCor.push([...this.game.snake.tailsCoordinate]),this.rewindDir.push(this.game.snake.direction)
+      if (this.rewindCor.length > 5) this.rewindCor.shift(), this.rewindDir.shift();
+      if (game.scene === 'game')
+        this.rewindCor.push([...this.game.snake.tailsCoordinate]),
+          this.rewindDir.push(this.game.snake.direction);
     }, 1000);
   }
   /**
@@ -278,7 +288,7 @@ class Rewind {
    */
   draw(context) {
     if (this.game.scene !== 'rewind') return; // not onRewind dont draw current snake
-    this.game.snake.direction = this.rewindDir[this.index] //to prevent wrong direction onRewind
+    this.game.snake.direction = this.rewindDir[this.index]; //to prevent wrong direction onRewind
     this.rewindCor[this.index].forEach(({ x, y }, i) => {
       context.fillStyle = 'darkslateblue';
       if (i === 0) context.fillStyle = 'slateblue';
