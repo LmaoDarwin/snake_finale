@@ -29,6 +29,7 @@ class Game {
     this.scene = 'game';
     this.player = null;
     this.blockSize = 20;
+    this.highscore = localStorage.getItem('highscore') || 0;
     this.offset = height - 600;
     this.gridWidth = this.width / this.blockSize;
     this.gridHeight = this.height / this.blockSize - 40 / this.blockSize;
@@ -39,13 +40,17 @@ class Game {
     this.apple = new Apple(this);
     this.rewind = new Rewind(this);
   }
-  /** @param {CanvasRenderingContext2D} context */
-  gameover(context){
-    if(this.scene !== 'over')return
-    context.canvas.addEventListener('click',()=>console.log('e'))
-    context.clearRect(0,0,this.width,this.height);
-    context.fillStyle = 'wheat'
-    context.fillRect(this.width/2,this.height/2,200,100)
+  /**
+   * @param {CanvasRenderingContext2D} context
+   * game over
+   */
+  gameover(context) {
+    if (this.scene !== 'over') return;
+    context.canvas.addEventListener('click', () => console.log('e'));
+    context.clearRect(0, 0, this.width, this.height);
+    context.fillStyle = 'wheat';
+    context.fillRect(this.width / 2, this.height / 2, 200, 100);
+    localStorage.setItem('highscore', Math.max(this.snake.currTails, this.highscore));
   }
   calculateTime() {
     if (this.scene !== 'game') return;
@@ -78,6 +83,8 @@ class Game {
     context.fillStyle = 'rgb(19 37 49)';
     context.font = 'bold italic 30px arial';
     context.fillText(`SCORE : ${this.snake.currTails}`, 5, (this.height - 600) / 2 + 10);
+    context.font = '15px arial';
+    context.fillText(`HIGHSCORE : ${this.highscore}`, this.width - 190, (this.height - 600) / 2 + 10);
   }
   /** @param {CanvasRenderingContext2D} context */
   grid(context) {
@@ -104,7 +111,7 @@ class Game {
     this.grid(context);
     this.score(context);
     this.printTime(context);
-    this.gameover(context)
+    this.gameover(context);
   }
   update() {
     this.snake.update();
@@ -124,8 +131,11 @@ class Snake {
     this.x = (game.gridWidth * this.size) / 2;
     this.y = (game.gridHeight * this.size) / 2;
     document.addEventListener('keydown', ({ key }) => {
-      //if queue is 3 stop push to array or screen area input player name is visible disable to prevent move before played
-      if (this.directionQueue.length >= 3 || screenArea.checkVisibility()) return;
+      // if queue is 3 stop push to array
+      // if screen area input player name is visible disable to prevent move before played
+      // if onRewind disable inpyt
+      if (this.directionQueue.length >= 3 || screenArea.checkVisibility() || this.game.scene === 'rewind')
+        return;
       switch (key) {
         case 'ArrowUp':
         case 'w':
@@ -145,10 +155,6 @@ class Snake {
           break;
       }
     });
-    // Rewind catch coordinates
-
-    //to check fps
-    // setInterval(() => console.log('second passed'), 1000);
   }
   //snake come frome opposite dircetion if out of bound
   onOutOfBound() {
@@ -176,11 +182,12 @@ class Snake {
       if (i === 0) context.fillStyle = 'slateblue';
       context.fillRect(x, y, this.size, this.size);
       // onCollision to tails
-      if (i !== 0)if(this.x == x && this.y == y) clearInterval(run),game.scene = 'over';
+      if (i !== 0) if (this.x == x && this.y == y) clearInterval(run), (game.scene = 'over');
     });
   }
-  // core of this class to do context canvas drawing
-  /** @param {CanvasRenderingContext2D} context */
+  /**
+   * to do context canvas drawing
+   * @param {CanvasRenderingContext2D} context */
   draw(context) {
     //not on game stop moving
     if (game.scene === 'game') {
@@ -193,22 +200,27 @@ class Snake {
     this.onOutOfBound();
   }
 }
-// TODO: STOP SPAWNING APPLE ON REWIND
 class Apple {
   /** @param {Game} game */
   constructor(game) {
     this.game = game;
     this.size = game.blockSize;
     this.appleCount = [];
-    this.popping = false;
+    this.count = 1;
+    //init apple using constructor manually
+    for (let i = 0; i < 3; i++) {
+      this.x = ~~(Math.random() * game.gridWidth) * this.size;
+      this.y = ~~(Math.random() * game.gridHeight) * this.size;
+      this.y += 40; //offset top;
+      this.appleCount.push({ x: this.x, y: this.y });
+    }
     this.x = 0;
     this.y = 0;
-    // setInterval(() => this.popApple(), 5000);
     setInterval(() => {
-      this.createApple();
-    }, 3000);
+      this.createApple(), this.popApple(), this.count++;
+    }, 1000);
   }
-  //on eat snake gain tail and remove the pellet
+  /** on eat snake gain tail and remove the pellet */
   onEaten() {
     if (game.scene !== 'game') return;
     this.appleCount.forEach((apple, i) => {
@@ -218,35 +230,30 @@ class Apple {
       }
     });
   }
+  /** remove first apple index */
   popApple() {
     if (game.scene !== 'game') return;
-    if (this.appleCount.length === 5) this.appleCount.shift();
+    if (this.appleCount.length === 5 && this.count >= 5) this.appleCount.shift(), (this.count = 0);
   }
   /** Creating the appple */
   createApple() {
     if (game.scene !== 'game') return;
-    if (this.popping) return (this.popping = false);
-    this.popping = false;
-    if (this.appleCount.length >= 5)
-      return setTimeout(() => {
-        this.popApple();
-        this.popping = true;
-      }, 2000);
+    if (this.appleCount.length === 5) return;
     this.x = ~~(Math.random() * game.gridWidth) * this.size;
     this.y = ~~(Math.random() * game.gridHeight) * this.size;
     this.y += 40; //offset top
-    // TODO: CHECK IF THE APPLE COLLIDE WITH SNAKE BODY
-    this.appleCount.push({ x: this.x, y: this.y });
+    if (this.count === 3) {
+      // TODO: CHECK IF THE APPLE COLLIDE WITH SNAKE BODY
+      this.appleCount.push({ x: this.x, y: this.y });
+      this.count = 0;
+    }
   }
   /**
    *  @param {CanvasRenderingContext2D} context
    *  spawning apple to the game area
    */
   spawnApple(context) {
-    // if (game.scene !== 'game') return;
-    if (this.appleCount.length < 3) {
-      for (let i = 0; i < 3; i++) this.createApple();
-    }
+    if (this.appleCount.length < 3) this.createApple(), this.appleCount.push({ x: this.x, y: this.y });
     this.appleCount.forEach((apple) => {
       context.fillStyle = 'yellow';
       context.fillRect(apple.x, apple.y, this.size, this.size);
@@ -257,11 +264,12 @@ class Rewind {
   /** @param {Game}game */
   constructor(game) {
     this.game = game;
+    this.rewindDir = []
     this.rewindCor = [];
     this.index = 4;
     setInterval(() => {
-      if (this.rewindCor.length > 5) this.rewindCor.shift();
-      if (game.scene === 'game') this.rewindCor.push([...this.game.snake.tailsCoordinate]);
+      if (this.rewindCor.length > 5) this.rewindCor.shift(),this.rewindDir.shift();
+      if (game.scene === 'game') this.rewindCor.push([...this.game.snake.tailsCoordinate]),this.rewindDir.push(this.game.snake.direction)
     }, 1000);
   }
   /**
@@ -269,13 +277,15 @@ class Rewind {
    *  @param {number}index
    */
   draw(context) {
-    if(this.game.scene !== 'rewind')return
+    if (this.game.scene !== 'rewind') return; // not onRewind dont draw current snake
+    this.game.snake.direction = this.rewindDir[this.index] //to prevent wrong direction onRewind
     this.rewindCor[this.index].forEach(({ x, y }, i) => {
       context.fillStyle = 'darkslateblue';
       if (i === 0) context.fillStyle = 'slateblue';
       context.fillRect(x, y, this.game.blockSize, this.game.blockSize);
     });
-    this.game.snake.currTails = this.rewindCor[this.index].length >= 6 ? this.rewindCor[this.index].length : 6;
+    this.game.snake.currTails =
+      this.rewindCor[this.index].length >= 6 ? this.rewindCor[this.index].length : 6;
     this.game.snake.tailsCoordinate = this.rewindCor[this.index];
     this.game.snake.x = this.rewindCor[this.index][0].x;
     this.game.snake.y = this.rewindCor[this.index][0].y;
@@ -311,11 +321,12 @@ nameInput.addEventListener('input', () => {
   } else play.disabled = true;
 });
 // onRewind
-rewindbtn.addEventListener('click', () => {
+function onRewind() {
+  if (game.scene === 'over') return;
   if (!rewindRange.checkVisibility()) {
     rewindRange.style.display = 'initial';
     game.scene = 'rewind';
-    rewind = setInterval(() => game.rewind.draw(ctx),250);
+    rewind = setInterval(() => game.rewind.draw(ctx), 1000 / fps);
     return;
   } //first click to show
   //second to do the rewind
@@ -323,6 +334,10 @@ rewindbtn.addEventListener('click', () => {
   rewindRange.style.display = 'none';
   clearInterval(rewind);
   game.scene = 'game';
+}
+rewindbtn.addEventListener('click', onRewind);
+window.addEventListener('keydown', ({ key }) => {
+  if (key === ' ' && !rewindbtn.disabled) onRewind();
 });
 rewindRange.addEventListener('input', ({ target }) => {
   game.rewind.index = target.value;
