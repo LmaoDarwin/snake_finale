@@ -264,11 +264,12 @@ class Rewind {
   /** @param {Game}game */
   constructor(game) {
     this.game = game;
+    this.rewindDir = []
     this.rewindCor = [];
     this.index = 4;
     setInterval(() => {
-      if (this.rewindCor.length > 5) this.rewindCor.shift();
-      if (game.scene === 'game') this.rewindCor.push([...this.game.snake.tailsCoordinate]);
+      if (this.rewindCor.length > 5) this.rewindCor.shift(),this.rewindDir.shift();
+      if (game.scene === 'game') this.rewindCor.push([...this.game.snake.tailsCoordinate]),this.rewindDir.push(this.game.snake.direction)
     }, 1000);
   }
   /**
@@ -276,7 +277,8 @@ class Rewind {
    *  @param {number}index
    */
   draw(context) {
-    if (this.game.scene !== 'rewind') return; // not onRewind stop drawing current snake
+    if (this.game.scene !== 'rewind') return; // not onRewind dont draw current snake
+    this.game.snake.direction = this.rewindDir[this.index] //to prevent wrong direction onRewind
     this.rewindCor[this.index].forEach(({ x, y }, i) => {
       context.fillStyle = 'darkslateblue';
       if (i === 0) context.fillStyle = 'slateblue';

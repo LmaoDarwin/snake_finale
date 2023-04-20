@@ -53,8 +53,11 @@ button {
   align-items: center;
   flex-direction: column;
 }
+#cancel,
 #rewindRange{
   display: none;
+}
+#rewindRange{
   width: 85%;
 }
 canvas {
