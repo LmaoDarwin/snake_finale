@@ -46,13 +46,13 @@ button {
 #game{
   padding-top: 2vh;
   gap: 10px;
-  display: none;
   height: inherit;
   max-height: inherit;
   justify-content: flex-start;
   align-items: center;
   flex-direction: column;
 }
+#game,
 #cancel,
 #rewindRange{
   display: none;
