@@ -5,6 +5,7 @@ const screenArea = document.querySelector('.screen');
 const playbtn = document.getElementById('play');
 /** @type {HTMLElement | HTMLButtonElement} */
 const rewindbtn = document.getElementById('rewind');
+const cancelbtn = document.getElementById('cancel');
 const gameArea = document.getElementById('game');
 /** @type {HTMLElement | HTMLInputElement} */
 const play = document.getElementById('play');
@@ -18,7 +19,6 @@ cvs.height = 640;
 let run;
 let rewind;
 rewindbtn.disabled = true;
-setTimeout(() => (rewindbtn.disabled = false), 5000);
 // --- ALL MATERIALS INIT ---
 
 // --- CLASS START ---
@@ -26,7 +26,7 @@ class Game {
   constructor(width, height) {
     this.width = width;
     this.height = height;
-    this.scene = 'game';
+    this.scene = '';
     this.player = null;
     this.blockSize = 20;
     this.highscore = localStorage.getItem('highscore') || 0;
@@ -46,12 +46,18 @@ class Game {
    */
   gameover(context) {
     if (this.scene !== 'over') return;
-    context.canvas.addEventListener('click', () => console.log('e'));
-    context.clearRect(0, 0, this.width, this.height);
-    context.fillStyle = 'wheat';
-    context.fillRect(this.width / 2 - 400/2, this.height / 2 - 300/2, 400, 300);
-    context.font = 'bold 20px'
-    context.fillText(`Your score : ${this.score}`,this.width/2,this.height/2)
+    context.canvas.addEventListener('click', () => window.location.reload());
+    context.fillStyle = 'rgba(245, 222, 179,0.8)';
+    context.fillRect(this.width / 2 - 400 / 2, this.height / 2 - 200 / 2, 400, 200);
+    //text section
+    context.fillStyle = 'rgb(19 37 49)';
+    //scores
+    context.font = 'bold italic 30px arial';
+    context.fillText(`Final Score : ${this.snake.currTails}`, this.width / 3, this.height / 2 - 30);
+    context.font = '20px arial';
+    context.fillText(`Highscore : ${this.highscore}`, this.width / 3, this.height / 2);
+    context.font = 'bold 30px arial';
+    context.fillText(`Tap anywhere to restart`, this.width / 3, this.height / 2 + 50, 300);
     localStorage.setItem('highscore', Math.max(this.snake.currTails, this.highscore));
   }
   calculateTime() {
@@ -82,6 +88,13 @@ class Game {
   score(context) {
     context.fillStyle = 'wheat';
     context.fillRect(0, 0, this.width, this.height - 600);
+    //logo
+    // context.fillStyle = 'rgb(69 165 210)';
+    context.fillStyle = 'rgb(19 37 49)';
+    context.font = 'bold 30px arial';
+    context.fillText(`PHYTONS`, this.width / 2 - (30 * 7) / 2, (this.height - 600) / 2 + 10);
+
+    //score
     context.fillStyle = 'rgb(19 37 49)';
     context.font = 'bold italic 30px arial';
     context.fillText(`SCORE : ${this.snake.currTails}`, 5, (this.height - 600) / 2 + 10);
@@ -116,6 +129,7 @@ class Game {
     this.gameover(context);
   }
   update() {
+    // console.log(this.player);
     this.snake.update();
     this.apple.onEaten();
   }
@@ -184,7 +198,7 @@ class Snake {
       if (i === 0) context.fillStyle = 'slateblue';
       context.fillRect(x, y, this.size, this.size);
       // onCollision to tails
-      if (i !== 0) if (this.x == x && this.y == y) clearInterval(run), (game.scene = 'over');
+      if (i !== 0) if (this.x == x && this.y == y) clearInterval(run), (this.game.scene = 'over');
     });
   }
   /**
@@ -192,7 +206,7 @@ class Snake {
    * @param {CanvasRenderingContext2D} context */
   draw(context) {
     //not on game stop moving
-    if (game.scene === 'game') {
+    if (this.game.scene === 'game') {
       this.createTails(context);
       this.controller();
     }
@@ -219,12 +233,14 @@ class Apple {
     this.x = 0;
     this.y = 0;
     setInterval(() => {
+      if (this.game.scene !== 'game') return;
+      if (this.count > 5) this.count = 0;//fix if any error happen to the count
       this.createApple(), this.popApple(), this.count++;
     }, 1000);
   }
   /** on eat snake gain tail and remove the pellet */
   onEaten() {
-    if (game.scene !== 'game') return;
+    if (this.game.scene !== 'game') return;
     this.appleCount.forEach((apple, i) => {
       if (this.game.snake.x === apple.x && this.game.snake.y === apple.y) {
         this.appleCount.splice(i, 1);
@@ -234,24 +250,23 @@ class Apple {
   }
   /** remove first apple index */
   popApple() {
-    if (game.scene !== 'game') return;
+    if (this.game.scene !== 'game') return;
     if (this.appleCount.length === 5 && this.count >= 5) this.appleCount.shift(), (this.count = 0);
   }
   /** Creating the appple */
   createApple() {
-    if (game.scene !== 'game') return;
+    if (this.game.scene !== 'game') return;
     if (this.appleCount.length === 5) return;
-    this.x = ~~(Math.random() * game.gridWidth) * this.size;
-    this.y = ~~(Math.random() * game.gridHeight) * this.size;
+    this.x = ~~(Math.random() * this.game.gridWidth) * this.size;
+    this.y = ~~(Math.random() * this.game.gridHeight) * this.size;
     this.y += 40; //offset top
     this.appleCount.forEach(({ x, y }) => {
       if (x === this.x && y === this.y) this.createApple();
-    });
+    }); //cant spawn pellet if occupied
     this.game.snake.tailsCoordinate.forEach(({ x, y }) => {
       if (x === this.x && y === this.y) this.createApple();
-    });
+    }); //cant spawn on snake body
     if (this.count === 3) {
-      // TODO: CHECK IF THE APPLE COLLIDE WITH SNAKE BODY
       this.appleCount.push({ x: this.x, y: this.y });
       this.count = 0;
     }
@@ -261,7 +276,10 @@ class Apple {
    *  spawning apple to the game area
    */
   spawnApple(context) {
-    if (this.appleCount.length < 3) this.createApple(), this.appleCount.push({ x: this.x, y: this.y });
+    if (this.appleCount.length < 3) {
+      this.count = 3
+      this.createApple();
+    } //pellet below 3 auto add
     this.appleCount.forEach((apple) => {
       context.fillStyle = 'yellow';
       context.fillRect(apple.x, apple.y, this.size, this.size);
@@ -277,7 +295,7 @@ class Rewind {
     this.index = 4;
     setInterval(() => {
       if (this.rewindCor.length > 5) this.rewindCor.shift(), this.rewindDir.shift();
-      if (game.scene === 'game')
+      if (this.game.scene === 'game')
         this.rewindCor.push([...this.game.snake.tailsCoordinate]),
           this.rewindDir.push(this.game.snake.direction);
     }, 1000);
@@ -314,15 +332,17 @@ function animate() {
 
 // --- EVENT HANDLER ---
 //onPlay
-window.onload = () => {
-  //for development plesase comment later
-  // playbtn.addEventListener('click', () => {
+// window.onload = () => {
+// for development plesase comment later
+playbtn.addEventListener('click', () => {
+  //precautions empty array onRewind
+  setTimeout(() => (rewindbtn.disabled = false), 5000);
+  game.scene = 'game';
   animate();
   run = setInterval(animate, 1000 / fps);
   screenArea.remove();
   gameArea.style.display = 'flex';
-};
-// );
+});
 //onInput
 nameInput.addEventListener('input', () => {
   if (nameInput.value != '') {
@@ -335,6 +355,7 @@ function onRewind() {
   if (game.scene === 'over') return;
   if (!rewindRange.checkVisibility()) {
     rewindRange.style.display = 'initial';
+    // cancelbtn.style.display = 'initial';
     game.scene = 'rewind';
     rewind = setInterval(() => game.rewind.draw(ctx), 1000 / fps);
     return;
@@ -344,10 +365,15 @@ function onRewind() {
   rewindRange.style.display = 'none';
   clearInterval(rewind);
   game.scene = 'game';
+  game.apple.count = 0;
+  //disable rewind
+  rewindbtn.disabled = true;
+  setTimeout(() => (rewindbtn.disabled = false), 5000);
 }
 rewindbtn.addEventListener('click', onRewind);
 window.addEventListener('keydown', ({ key }) => {
-  if (key === ' ' && !rewindbtn.disabled) onRewind();
+  if (rewindbtn.disabled) return;
+  if (key === ' ') onRewind();
 });
 rewindRange.addEventListener('input', ({ target }) => {
   game.rewind.index = target.value;

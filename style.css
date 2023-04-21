@@ -73,6 +73,7 @@ canvas {
 }
 .screen {
   height: inherit;
+  max-height: inherit;
   border-radius: 30px;
   padding: 50px;
   padding-top: 20vh;
