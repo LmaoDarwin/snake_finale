@@ -57,6 +57,9 @@ button {
 #rewindRange{
   display: none;
 }
+#cancel{
+  background-color: orangered;
+}
 #rewindRange{
   width: 85%;
 }

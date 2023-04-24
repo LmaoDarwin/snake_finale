@@ -1,5 +1,6 @@
 // --- ALL MATERIALS INIT ---
 const nameInput = document.getElementById('name');
+/** @type {HTMLInputElement} */
 const rewindRange = document.getElementById('rewindRange');
 const screenArea = document.querySelector('.screen');
 const playbtn = document.getElementById('play');
@@ -129,7 +130,6 @@ class Game {
     this.gameover(context);
   }
   update() {
-    // console.log(this.player);
     this.snake.update();
     this.apple.onEaten();
   }
@@ -234,7 +234,7 @@ class Apple {
     this.y = 0;
     setInterval(() => {
       if (this.game.scene !== 'game') return;
-      if (this.count > 5) this.count = 0;//fix if any error happen to the count
+      if (this.count > 5) this.count = 0; //fix if any error happen to the count
       this.createApple(), this.popApple(), this.count++;
     }, 1000);
   }
@@ -277,7 +277,7 @@ class Apple {
    */
   spawnApple(context) {
     if (this.appleCount.length < 3) {
-      this.count = 3
+      this.count = 3;
       this.createApple();
     } //pellet below 3 auto add
     this.appleCount.forEach((apple) => {
@@ -313,7 +313,7 @@ class Rewind {
       context.fillRect(x, y, this.game.blockSize, this.game.blockSize);
     });
     this.game.snake.currTails =
-      this.rewindCor[this.index].length >= 6 ? this.rewindCor[this.index].length : 6;
+      this.rewindCor[this.index].length >= 6 ? this.rewindCor[this.index].length : 6;//prefix early rewind error
     this.game.snake.tailsCoordinate = this.rewindCor[this.index];
     this.game.snake.x = this.rewindCor[this.index][0].x;
     this.game.snake.y = this.rewindCor[this.index][0].y;
@@ -332,8 +332,6 @@ function animate() {
 
 // --- EVENT HANDLER ---
 //onPlay
-// window.onload = () => {
-// for development plesase comment later
 playbtn.addEventListener('click', () => {
   //precautions empty array onRewind
   setTimeout(() => (rewindbtn.disabled = false), 5000);
@@ -355,26 +353,46 @@ function onRewind() {
   if (game.scene === 'over') return;
   if (!rewindRange.checkVisibility()) {
     rewindRange.style.display = 'initial';
-    // cancelbtn.style.display = 'initial';
+    cancelbtn.style.display = 'initial';
     game.scene = 'rewind';
     rewind = setInterval(() => game.rewind.draw(ctx), 1000 / fps);
     return;
   } //first click to show
   //second to do the rewind
   game.snake.controller();
+  //style back to none
   rewindRange.style.display = 'none';
+  cancelbtn.style.display = 'none';
+  //reset interval drawing rewind
   clearInterval(rewind);
+  //reset apple count, scene to game and rewind index
   game.scene = 'game';
   game.apple.count = 0;
+  game.rewind.index = 4;
+  rewindRange.value = 4;
   //disable rewind
   rewindbtn.disabled = true;
-  setTimeout(() => (rewindbtn.disabled = false), 5000);
+  //delay to prevent buggy fast rewind
+  setTimeout(() => (rewindbtn.disabled = false), 1000);
 }
+//rewind button
 rewindbtn.addEventListener('click', onRewind);
+//cancel button
+cancelbtn.addEventListener('click', () => {
+  //why 4? it is last index of rewindCore which the current latest position
+  game.snake.direction = game.rewind.rewindDir[4]; //to prevent wrong direction onRewind
+  //change position of snake
+  game.snake.tailsCoordinate = game.rewind.rewindCor[4];
+  game.snake.x = game.rewind.rewindCor[4][0].x;
+  game.snake.y = game.rewind.rewindCor[4][0].y;
+  onRewind();
+});
+//space click even
 window.addEventListener('keydown', ({ key }) => {
   if (rewindbtn.disabled) return;
   if (key === ' ') onRewind();
 });
+//range input
 rewindRange.addEventListener('input', ({ target }) => {
   game.rewind.index = target.value;
 });
