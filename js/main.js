@@ -1,4 +1,6 @@
 // --- ALL MATERIALS INIT ---
+const label = document.getElementById('label');
+label.textContent = 'Input Your Name';
 const nameInput = document.getElementById('name');
 /** @type {HTMLInputElement} */
 const rewindRange = document.getElementById('rewindRange');
@@ -14,6 +16,14 @@ const play = document.getElementById('play');
 const cvs = document.getElementById('canvas');
 /** @type {CanvasRenderingContext2D} */
 const ctx = cvs.getContext('2d');
+const pellet = new Image();
+pellet.src = '/design/source/money.png';
+pellet.height = 20;
+pellet.width = 20;
+const logo = new Image();
+logo.src = '/design/source/logo.png';
+logo.width = 165;
+logo.height = 40;
 const fps = 4;
 cvs.width = 960;
 cvs.height = 640;
@@ -24,6 +34,7 @@ rewindbtn.disabled = true;
 
 // --- CLASS START ---
 class Game {
+  fontColor = '#d9d9d9';
   constructor(width, height) {
     this.width = width;
     this.height = height;
@@ -48,10 +59,10 @@ class Game {
   gameover(context) {
     if (this.scene !== 'over') return;
     context.canvas.addEventListener('click', () => window.location.reload());
-    context.fillStyle = 'rgba(245, 222, 179,0.8)';
+    context.fillStyle = 'rgba(56, 56, 98, 0.8)';
     context.fillRect(this.width / 2 - 400 / 2, this.height / 2 - 200 / 2, 400, 200);
     //text section
-    context.fillStyle = 'rgb(19 37 49)';
+    context.fillStyle = this.fontColor;
     //scores
     context.font = 'bold italic 30px arial';
     context.fillText(`Final Score : ${this.snake.currTails}`, this.width / 3, this.height / 2 - 30);
@@ -74,7 +85,8 @@ class Game {
    * Print time to the board
    * */
   printTime(context) {
-    context.fillStyle = 'rgb(19 37 49)';
+    // context.fillStyle = 'rgb(19 37 49)';
+    context.fillStyle = this.fontColor;
     context.font = '20px arial';
     context.fillText(
       `${this.minute}:${this.second >= 10 ? this.second : '0' + this.second}`,
@@ -87,16 +99,13 @@ class Game {
    * Print score to the board
    * */
   score(context) {
-    context.fillStyle = 'wheat';
+    context.fillStyle = '#383862';
     context.fillRect(0, 0, this.width, this.height - 600);
     //logo
-    // context.fillStyle = 'rgb(69 165 210)';
-    context.fillStyle = 'rgb(19 37 49)';
-    context.font = 'bold 30px arial';
-    context.fillText(`PHYTONS`, this.width / 2 - (30 * 7) / 2, (this.height - 600) / 2 + 10);
-
+    context.drawImage(logo, this.width / 2 - logo.width / 2, 3, logo.width - 5, logo.height - 5);
     //score
-    context.fillStyle = 'rgb(19 37 49)';
+    // context.fillStyle = 'rgb(19 37 49)';
+    context.fillStyle = this.fontColor;
     context.font = 'bold italic 30px arial';
     context.fillText(`SCORE : ${this.snake.currTails}`, 5, (this.height - 600) / 2 + 10);
     context.font = '15px arial';
@@ -124,7 +133,7 @@ class Game {
   draw(context) {
     this.apple.spawnApple(context);
     this.snake.draw(context);
-    this.grid(context);
+    // this.grid(context);
     this.score(context);
     this.printTime(context);
     this.gameover(context);
@@ -150,7 +159,7 @@ class Snake {
       // if queue is 3 stop push to array
       // if screen area input player name is visible disable to prevent move before played
       // if onRewind disable inpyt
-      if (this.directionQueue.length >= 3 || screenArea.checkVisibility() || this.game.scene === 'rewind')
+      if (this.directionQueue.length >= 2 || screenArea.checkVisibility() || this.game.scene === 'rewind')
         return;
       switch (key) {
         case 'ArrowUp':
@@ -194,8 +203,8 @@ class Snake {
     this.tailsCoordinate.unshift({ x: this.x, y: this.y });
     this.tailsCoordinate.splice(this.currTails);
     this.tailsCoordinate.forEach(({ x, y }, i) => {
-      context.fillStyle = 'darkslateblue'; //color of the snake
-      if (i === 0) context.fillStyle = 'slateblue';
+      context.fillStyle = '#D9D9D9'; //color of the snake
+      if (i % 2 !== 0) context.fillStyle = '#1B1B1B';
       context.fillRect(x, y, this.size, this.size);
       // onCollision to tails
       if (i !== 0) if (this.x == x && this.y == y) clearInterval(run), (this.game.scene = 'over');
@@ -266,6 +275,7 @@ class Apple {
     this.game.snake.tailsCoordinate.forEach(({ x, y }) => {
       if (x === this.x && y === this.y) this.createApple();
     }); //cant spawn on snake body
+    //spawn on count 3 (3 seconds)
     if (this.count === 3) {
       this.appleCount.push({ x: this.x, y: this.y });
       this.count = 0;
@@ -281,8 +291,9 @@ class Apple {
       this.createApple();
     } //pellet below 3 auto add
     this.appleCount.forEach((apple) => {
-      context.fillStyle = 'yellow';
-      context.fillRect(apple.x, apple.y, this.size, this.size);
+      context.drawImage(pellet, apple.x, apple.y, pellet.width, pellet.height);
+      // context.fillStyle = 'yellow';
+      // context.fillRect(apple.x, apple.y, this.size, this.size);
     });
   }
 }
@@ -308,12 +319,12 @@ class Rewind {
     if (this.game.scene !== 'rewind') return; // not onRewind dont draw current snake
     this.game.snake.direction = this.rewindDir[this.index]; //to prevent wrong direction onRewind
     this.rewindCor[this.index].forEach(({ x, y }, i) => {
-      context.fillStyle = 'darkslateblue';
-      if (i === 0) context.fillStyle = 'slateblue';
+      context.fillStyle = '#D9D9D9'; //color of the snake
+      if (i % 2 !== 0) context.fillStyle = '#1B1B1B';
       context.fillRect(x, y, this.game.blockSize, this.game.blockSize);
     });
     this.game.snake.currTails =
-      this.rewindCor[this.index].length >= 6 ? this.rewindCor[this.index].length : 6;//prefix early rewind error
+      this.rewindCor[this.index].length >= 6 ? this.rewindCor[this.index].length : 6; //prefix early rewind error
     this.game.snake.tailsCoordinate = this.rewindCor[this.index];
     this.game.snake.x = this.rewindCor[this.index][0].x;
     this.game.snake.y = this.rewindCor[this.index][0].y;
@@ -343,10 +354,15 @@ playbtn.addEventListener('click', () => {
 });
 //onInput
 nameInput.addEventListener('input', () => {
+  //if input not empty
   if (nameInput.value != '') {
+    label.textContent = 'Greetings, ' + nameInput.value;
     play.disabled = false;
     game.player = nameInput.value;
-  } else play.disabled = true;
+  } else {
+    play.disabled = true;
+    label.textContent = 'Input Your Name';
+  }
 });
 // onRewind
 function onRewind() {

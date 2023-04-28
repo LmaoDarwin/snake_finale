@@ -10,33 +10,26 @@
   </head>
   <body>
     <main class="screen">
-      <div class="icon"><h1>PHYTONS</h1></div>
+      <img src="design/source/logo.png" alt="logo" class="logo" />
       <div class="instruction">
-        <h2>Game instruction</h2>
-        <ol>
-          <li>North with up arrow or ‘w’</li>
-          <li>South with down arrow or ‘s’</li>
-          <li>East with right arrow or ‘d’</li>
-          <li>West with left arrow or ‘a’</li>
-        </ol>
-        <p>
-          The first screen of the game presents the instructions to the player, a text field for player’s
-          name, and the Play buttons for starting the game. The instructions for the game are included in the
-          media files. The “Play” button should be disabled if the text field is empty.
-        </p>
+        <img src="design/bekasi_instructions_2.png" alt="instruction" class="sd" />
       </div>
       <div class="before-play">
-        <label for="name"><h2>Input your name</h2></label>
+        <label for="name" id="label" style="font-size: 20px !important; font-weight: bold"
+          ><h2></h2></label
+        >
         <input id="name" type="text" autocomplete="off" />
         <button id="play" disabled="true">Play</button>
       </div>
     </main>
     <main id="game">
       <canvas id="canvas"></canvas>
-      <input type="range" id="rewindRange" min="0" max="4" value="4" />
-      <div>
-        <button id="cancel">Cancel</button>
-        <button id="rewind">Rewind</button>
+      <div style="width: 85%;">
+        <input type="range" id="rewindRange" min="0" max="4" value="4" />
+        <div style="display: flex;justify-content: center;">
+          <button id="cancel">Cancel</button>
+          <button id="rewind">Rewind</button>
+        </div>
       </div>
     </main>
   </body>
