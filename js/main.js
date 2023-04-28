@@ -16,6 +16,10 @@ const play = document.getElementById('play');
 const cvs = document.getElementById('canvas');
 /** @type {CanvasRenderingContext2D} */
 const ctx = cvs.getContext('2d');
+const head = new Image();
+head.src = '/design/source/head.png';
+head.height = 20;
+head.width = 20;
 const pellet = new Image();
 pellet.src = '/design/source/money.png';
 pellet.height = 20;
@@ -129,6 +133,29 @@ class Game {
       context.stroke();
     }
   }
+  /**
+   * draw image with rotation
+   * @param {HTMLImageElement} img
+   * @param {Number} x
+   * @param {Number} y
+   * @param {Number} width
+   * @param {Number} height
+   * @param {Number} deg
+   */
+  drawImageRot(img, x, y, width, height, deg) {
+    // Store the current context state (i.e. rotation, translation etc..)
+    ctx.save();
+    //Convert degrees to radian
+    let rad = (deg * Math.PI) / 180;
+    //Set the origin to the center of the image
+    ctx.translate(x + width / 2, y + height / 2);
+    //Rotate the canvas around the origin
+    ctx.rotate(rad);
+    //draw the image
+    ctx.drawImage(img, (width / 2) * -1, (height / 2) * -1, width, height);
+    // Restore canvas state as saved from above
+    ctx.restore();
+  }
   /** @param {CanvasRenderingContext2D} context */
   draw(context) {
     this.apple.spawnApple(context);
@@ -181,6 +208,16 @@ class Snake {
       }
     });
   }
+  /**
+   * get the direction of the head to calculate angle
+   * @param {string} dir
+   */
+  getHeadDirection(dir) {
+    if (dir === 'right') return 180; //right
+    if (dir === 'left') return 0; //Left
+    if (dir === 'down') return 270; //down
+    if (dir === 'up') return 90; //up
+  }
   //snake come frome opposite dircetion if out of bound
   onOutOfBound() {
     if (this.x < 0) this.x = this.game.width - this.size; //left
@@ -204,6 +241,7 @@ class Snake {
     this.tailsCoordinate.splice(this.currTails);
     this.tailsCoordinate.forEach(({ x, y }, i) => {
       context.fillStyle = '#D9D9D9'; //color of the snake
+      if (i === 0) return this.game.drawImageRot(head,x,y,this.size,this.size,this.getHeadDirection(this.direction)); //draw head
       if (i % 2 !== 0) context.fillStyle = '#1B1B1B';
       context.fillRect(x, y, this.size, this.size);
       // onCollision to tails
@@ -290,11 +328,9 @@ class Apple {
       this.count = 3;
       this.createApple();
     } //pellet below 3 auto add
-    this.appleCount.forEach((apple) => {
-      context.drawImage(pellet, apple.x, apple.y, pellet.width, pellet.height);
-      // context.fillStyle = 'yellow';
-      // context.fillRect(apple.x, apple.y, this.size, this.size);
-    });
+    this.appleCount.forEach((apple) =>
+      context.drawImage(pellet, apple.x, apple.y, pellet.width, pellet.height)
+    );
   }
 }
 class Rewind {
@@ -303,6 +339,7 @@ class Rewind {
     this.game = game;
     this.rewindDir = [];
     this.rewindCor = [];
+    this.size = game.snake.size
     this.index = 4;
     setInterval(() => {
       if (this.rewindCor.length > 5) this.rewindCor.shift(), this.rewindDir.shift();
@@ -319,6 +356,7 @@ class Rewind {
     if (this.game.scene !== 'rewind') return; // not onRewind dont draw current snake
     this.game.snake.direction = this.rewindDir[this.index]; //to prevent wrong direction onRewind
     this.rewindCor[this.index].forEach(({ x, y }, i) => {
+      if (i === 0) return this.game.drawImageRot(head,x,y,this.size,this.size,this.game.snake.getHeadDirection(this.game.snake.direction)); //draw head
       context.fillStyle = '#D9D9D9'; //color of the snake
       if (i % 2 !== 0) context.fillStyle = '#1B1B1B';
       context.fillRect(x, y, this.game.blockSize, this.game.blockSize);
