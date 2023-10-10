@@ -63,7 +63,7 @@ button {
   width: 100%;
 }
 canvas {
-  background-image: url('snake_finale/design/bekasi_game_board_3.png');
+  background-image: url('https://lmaodarwin.github.io/snake_finale/design/bekasi_game_board_3.png');
   /* background-color: rgb(155 136 122); */
   display: inherit;
 }
